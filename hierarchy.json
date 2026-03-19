@@ -57,7 +57,7 @@
     },
     "bass": {
       "tag_regex": "(?=.*bass)(?!.*808)",
-      "file_regex": "^(?!.*808).*$",
+      "file_regex": "(bass|sub_bass|subbass)",
       "include_loops": true,
       "percussive": false
     },

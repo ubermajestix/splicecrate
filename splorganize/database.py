@@ -14,7 +14,7 @@ def connect(db_path):
         if item is None:
             return False
         try:
-            return re.search(expr, item) is not None
+            return re.search(expr, item, re.IGNORECASE) is not None
         except re.error as e:
             log.warning("Invalid regex %r: %s", expr, e)
             return False
@@ -33,9 +33,11 @@ def get_samples(conn, category_config):
     include_loops = category_config.get("include_loops", True)
 
     clauses = ["local_path IS NOT NULL"]
-    if tag_regex:
+    if tag_regex and file_regex:
+        clauses.append(f"(tags REGEXP '{tag_regex}' OR filename REGEXP '{file_regex}')")
+    elif tag_regex:
         clauses.append(f"tags REGEXP '{tag_regex}'")
-    if file_regex:
+    elif file_regex:
         clauses.append(f"filename REGEXP '{file_regex}'")
     if not include_loops:
         clauses.append("sample_type = 'oneshot'")
