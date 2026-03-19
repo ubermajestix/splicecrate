@@ -1,33 +1,149 @@
-<img src=https://github.com/ebai101/splorganizer/raw/master/logo.png width=411 height=172></img>
+# splicecrate
 
-### what is this
+Organize your [Splice](https://splice.com) sample library into a browsable directory structure for hardware samplers like the [1010music Blackbox](https://1010music.com/blackbox).
 
-Splice's local file storage isn't really designed to be navigated without using the app. I prefer to use the file browser in my DAW, as I'm sure many people do, and I have my other samples organized by the type of sound instead of by sample pack. Switching back and forth between the app and the DAW is a bit cumbersome, and it bypasses a lot of the integrated features of integrated file browsers.
+Splice stores samples in pack-based folders that are painful to navigate on a small screen. splicecrate reads your Splice `sounds.db` database, categorizes samples by instrument type, and builds a clean folder hierarchy — then syncs it to your SD card.
 
-This tool addresses that by sorting all locally downloaded samples into a hierarchy of symlinks. Each subfolder in the "sorted" directory contains a bunch of links to the samples in the Splice packs folder, organized by the type of sound. The original Splice folder is untouched, so that synchronization with the client isn't disturbed.
+## Features
 
-### usage
+- **20 instrument categories** derived from your actual sample tags — kicks, snares, bass, synth, vocals, piano, and more
+- **Incremental updates** — only copies new or changed samples, never deletes existing files (safe for samples no longer available on Splice)
+- **Two-phase workflow** — stage locally (fast), then sync to SD card (skip files already present)
+- **Smart organization** — percussive samples stay flat for quick browsing; melodic samples are sorted by key and type
+- **Dry-run mode** — preview what will be copied before committing
 
-First off, clone the repo. Splorganizer looks for the file `splorganizer_paths.py` for the original and sorted splice directories. Create that file and put in something like this:
+## Directory structure
 
 ```
-splice_dir = '/Users/me/Splice'
-sorted_dir = '/Users/me/Music stuff/Splorganizer'
+SD card/
+  kicks/
+    oneshot/
+      kick-sample.wav
+    loop/
+      140-kick-loop.wav
+  snares/
+    oneshot/
+      snr-001.wav
+    loop/
+      130-snare-roll.wav
+  hats/
+    oneshot/
+      hat-closed.wav
+    loop/
+      120-hat-loop.wav
+  grooves/
+    loop/
+      120-drum-break.wav
+    oneshot/
+      fill-smash.wav
+  bass/
+    oneshot/
+      C/
+        C-bass-hit.wav
+    loop/
+      G#-120-bass-loop.wav
+  808/
+    oneshot/
+      F/
+        F-808-sub.wav
+  synth/
+    loop/
+      A-140-synth-pad.wav
+  vocals/
+    loop/
+      130-vocal-chop.wav
+  other/
+    oneshot/
+      misc-sample.wav
 ```
 
-You'll also need to get your sounds database file. Open the Splice client, go to settings and click "Download logs". From there, run these commands:
+## Setup
+
+**Get your sounds database:**
+
+1. Open the Splice desktop app
+2. Go to Settings and click **Download logs**
+3. Extract the zip and copy your `sounds.db`:
+   ```
+   unzip ~/Downloads/SpliceLogs-*.zip -d SpliceLogs
+   cp SpliceLogs/users/default/YOUR_USERNAME/sounds.db .
+   ```
+
+**Optional config file** at `~/.splicecrate/splicecrate.toml`:
+
+```toml
+splice_dir = "C:/Users/you/Documents/Splice/Samples"
+stage_dir = "C:/Users/you/Documents/Splice/Splicecrate"
+dest_dir = "E:/"
+sounds_db = "C:/path/to/sounds.db"
 ```
-cd /path/to/splorganizer
-mv ~/Downloads/SpliceLogs-blahblahmetadatablah.zip SpliceLogs.zip
-unzip SpliceLogs.zip && rm SpliceLogs.zip
-mv SpliceLogs/users/default/YOURSPLICEUSERNAME/sounds.db .
+
+All paths can also be passed as CLI flags.
+
+## Usage
+
+```bash
+# See what you've got
+python -m splicecrate --db sounds.db status
+
+# Preview what would be organized
+python -m splicecrate --db sounds.db organize --dry-run
+
+# Organize samples to local staging directory
+python -m splicecrate --db sounds.db organize
+
+# Preview what would sync to SD card
+python -m splicecrate --dest-dir E:/ sync --dry-run
+
+# Sync staged files to SD card
+python -m splicecrate --dest-dir E:/ sync
 ```
 
-Then you should be able to open the build_database notebook and run everything.
+### Commands
 
-### requirements
+| Command | Description |
+|---------|-------------|
+| `organize` | Read sounds.db and copy new/changed samples to local staging directory |
+| `sync` | Copy staged files to SD card, skipping files already present |
+| `status` | Show category counts and how many samples are new since last run |
 
-- sqlite3
-- pandas
+### Flags
 
-I ran this on Python 3.8.2, haven't tested on other versions.
+| Flag | Description |
+|------|-------------|
+| `--db PATH` | Path to sounds.db |
+| `--stage-dir PATH` | Local staging directory |
+| `--dest-dir PATH` | SD card mount point |
+| `--dry-run` | Preview without copying |
+| `-v, --verbose` | Enable debug logging |
+
+## Categories
+
+Categories are defined in `hierarchy.json` and matched against sample tags and filenames in sounds.db.
+
+**Percussive** (no key sorting):
+kicks, snares, hats, claps, cymbals, percussion, grooves, fx
+
+Kicks, snares, hats, and grooves split into `oneshot/` and `loop/` subdirectories. Loops are prefixed with BPM (e.g., `140-kick-loop.wav`). Other percussive categories contain oneshots only.
+
+**Melodic** (sorted by sample type and musical key):
+808, bass, synth, leads, stabs, piano, keys, guitar, orchestral, sax, pads, vocals
+
+Samples matching multiple categories are copied to all of them. Anything unmatched goes to `other/`.
+
+## Requirements
+
+- Python 3.11+
+- No external dependencies (stdlib only)
+
+## Credits
+
+Originally forked from [splorganizer](https://github.com/ebai101/splorganizer) by Ethan Bailey.
+
+## License
+
+[MIT](LICENSE)
+
+---
+
+*Not affiliated with Splice or 1010music.*

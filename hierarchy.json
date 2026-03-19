@@ -3,20 +3,23 @@
     "kicks": {
       "tag_regex": "kicks",
       "file_regex": "(kick|bd|kik)",
-      "include_loops": false,
-      "percussive": true
+      "include_loops": true,
+      "percussive": true,
+      "split_by_type": true
     },
     "snares": {
       "tag_regex": "snares",
       "file_regex": "(snare|snr|sd)",
-      "include_loops": false,
-      "percussive": true
+      "include_loops": true,
+      "percussive": true,
+      "split_by_type": true
     },
     "hats": {
       "tag_regex": "hats",
       "file_regex": "(hat|hh|hihat)",
       "include_loops": true,
-      "percussive": true
+      "percussive": true,
+      "split_by_type": true
     },
     "claps": {
       "tag_regex": "claps",
