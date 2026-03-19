@@ -1,44 +1,128 @@
 {
-   "sample_dirs":   {
-      "kicks":{
-         "tag_regex":"(?=.*kicks)(?=.*drums)",
-         "file_regex":"(kick|bd|kik)",
-         "include_loops":0
-      },
-      "snares":{
-         "tag_regex":"(?=.*snares)(?=.*drums)",
-         "file_regex":"(snare|snr|sd)",
-         "include_loops":0
-      },
-      "hats":{
-         "tag_regex":"(?=.*hats)(?=.*drums)",
-         "file_regex":"(hat|hihat)",
-         "include_loops":1
-      },
-      "toms":{
-         "tag_regex":"(?=.*toms)(?=.*drums)",
-         "file_regex":"",
-         "include_loops":1
-      },
-      "claps":{
-         "tag_regex":"claps",
-         "file_regex":"^(?!.*snare.*$).*$",
-         "include_loops":1
-      },
-      "808":{
-         "tag_regex":"(?=.*808)(?=.*bass)",
-         "file_regex":"808",
-         "include_loops":1
-      },
-      "tonal":{
-         "query": "select * from samples where audio_key not null and instr(tags, 'drums') = 0 and instr(filename, '808') = 0 and local_path not null"
-      }
-   },
-   "catchall":
-   {
-      "dirname": "percussion",
-      "tag_regex":"percussion",
-      "file_regex":"",
-      "include_loops":1
-   }
+  "categories": {
+    "kicks": {
+      "tag_regex": "kicks",
+      "file_regex": "(kick|bd|kik)",
+      "include_loops": false,
+      "percussive": true
+    },
+    "snares": {
+      "tag_regex": "snares",
+      "file_regex": "(snare|snr|sd)",
+      "include_loops": false,
+      "percussive": true
+    },
+    "hats": {
+      "tag_regex": "hats",
+      "file_regex": "(hat|hh|hihat)",
+      "include_loops": true,
+      "percussive": true
+    },
+    "claps": {
+      "tag_regex": "claps",
+      "file_regex": "",
+      "include_loops": false,
+      "percussive": true
+    },
+    "cymbals": {
+      "tag_regex": "cymbals|rides|crash",
+      "file_regex": "",
+      "include_loops": false,
+      "percussive": true
+    },
+    "percussion": {
+      "tag_regex": "percussion|toms|shakers|tambourine|rims|congas|bongos|cowbells",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": true
+    },
+    "grooves": {
+      "tag_regex": "grooves|breakbeat|fills",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": true,
+      "split_by_type": true
+    },
+    "fx": {
+      "tag_regex": "fx|risers|impacts|sweeps",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": true
+    },
+    "808": {
+      "tag_regex": "808",
+      "file_regex": "808",
+      "include_loops": true,
+      "percussive": false
+    },
+    "bass": {
+      "tag_regex": "(?=.*bass)(?!.*808)",
+      "file_regex": "^(?!.*808).*$",
+      "include_loops": true,
+      "percussive": false
+    },
+    "synth": {
+      "tag_regex": "synth",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": false
+    },
+    "leads": {
+      "tag_regex": "leads",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": false
+    },
+    "stabs": {
+      "tag_regex": "stabs",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": false
+    },
+    "piano": {
+      "tag_regex": "piano",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": false
+    },
+    "keys": {
+      "tag_regex": "keys|organ",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": false
+    },
+    "guitar": {
+      "tag_regex": "guitar",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": false
+    },
+    "orchestral": {
+      "tag_regex": "strings|brass.*woodwinds|bells|horns|flute|trumpet",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": false
+    },
+    "sax": {
+      "tag_regex": "sax",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": false
+    },
+    "pads": {
+      "tag_regex": "pads|atmospheres",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": false
+    },
+    "vocals": {
+      "tag_regex": "vocals",
+      "file_regex": "",
+      "include_loops": true,
+      "percussive": false
+    }
+  },
+  "catchall": {
+    "dirname": "other"
+  }
 }

@@ -1,7 +1,8 @@
-splorganizer_paths.py
 sounds.db
+sounds.db-journal
 .DS_Store
 .ipynb_checkpoints
 __pycache__/
 SpliceLogs-*/*
-sounds.db-journal
+splorganizer.toml
+.splorganizer_manifest.json
