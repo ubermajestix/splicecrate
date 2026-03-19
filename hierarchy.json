@@ -3,12 +3,17 @@
       "kicks":{
          "tag_regex":"(?=.*kicks)(?=.*drums)",
          "file_regex":"(kick|bd|kik)",
-         "include_loops":0
+         "include_loops":1
       },
       "snares":{
          "tag_regex":"(?=.*snares)(?=.*drums)",
          "file_regex":"(snare|snr|sd)",
-         "include_loops":0
+         "include_loops":1
+      },
+      "percussion":{
+         "tag_regex":"(?=.*perc)",
+         "file_regex":"^(?!kick|bd|kik|snare|snr|sd|clap|hat|hihat).*$",
+         "include_loops":1
       },
       "hats":{
          "tag_regex":"(?=.*hats)(?=.*drums)",
@@ -17,6 +22,16 @@
       },
       "toms":{
          "tag_regex":"(?=.*toms)(?=.*drums)",
+         "file_regex":"",
+         "include_loops":1
+      },
+      "grooves":{
+         "tag_regex":"(?=.*grooves|break)",
+         "file_regex":"(drum)",
+         "include_loops":1
+      },
+      "cymbals":{
+         "tag_regex":"(?=.*cymbals)",
          "file_regex":"",
          "include_loops":1
       },
@@ -30,15 +45,60 @@
          "file_regex":"808",
          "include_loops":1
       },
-      "tonal":{
-         "query": "select * from samples where audio_key not null and instr(tags, 'drums') = 0 and instr(filename, '808') = 0 and local_path not null"
+      "bass":{
+         "tag_regex":"(?=.*bass)",
+         "file_regex":"bass",
+         "include_loops":1
+      },
+      "guitar":{
+         "tag_regex":"(?=.*guitar)",
+         "file_regex":"guitar",
+         "include_loops":1
+      },
+      "synth":{
+         "tag_regex":"(?=.*synth)",
+         "file_regex":"synth",
+         "include_loops":1
+      },
+      "piano":{
+         "tag_regex":"(?=.*piano)(?=.*keys)",
+         "file_regex":"piano",
+         "include_loops":1
+      },
+      "keys":{
+         "tag_regex":"(?=.*keys)",
+         "file_regex":"^(?!.*piano.*$).*$",
+         "include_loops":1
+      },
+      "fx":{
+         "tag_regex":"(?=.*fx)",
+         "file_regex":"fx",
+         "include_loops":1
+      },
+      "atmospheres":{
+         "tag_regex":"(?=.*atmospheres)",
+         "file_regex":"",
+         "include_loops":1
+      },
+      "pads":{
+         "tag_regex":"(?=.*pads)",
+         "file_regex":"^(?!.*atmos.*$).*$",
+         "include_loops":1
+      },
+      "risers":{
+         "tag_regex":"(?=.*risers)",
+         "file_regex":"",
+         "include_loops":1
+      },
+      "vocals":{
+         "tag_regex":"(?=.*vocals)",
+         "file_regex":"",
+         "include_loops":1
+      },
+      "sax":{
+         "tag_regex":"(?=.*sax)",
+         "file_regex":"",
+         "include_loops":1
       }
-   },
-   "catchall":
-   {
-      "dirname": "percussion",
-      "tag_regex":"percussion",
-      "file_regex":"",
-      "include_loops":1
    }
 }

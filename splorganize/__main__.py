@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import sqlite3
 import pandas as pd
+from collections import defaultdict
 
 splice_dir = 'C:/Users/carol/Documents/Splice/Samples/'
 sorted_dir  = 'C:/Users/carol/Documents/Splice/Splorganized/'
@@ -35,7 +36,6 @@ def reset_filetree():
         shutil.rmtree (dirname.path)
     for dirname in hierarchy['sample_dirs'].keys():
         os.mkdir (sorted_dir + '/' + dirname)
-    os.mkdir (sorted_dir + '/' + hierarchy['catchall']['dirname'])
 
 def get_samples (cat, custom_query=None):
     if 'query' in cat:
@@ -63,11 +63,16 @@ def samples_to_dataframe (samples):
 
 # create link directory
 def generate_links (dirname, samples):
-    for row in samples:
+    num_samples = len(samples)
+    for i, row in enumerate(samples):
+        progress = (i + 1) / num_samples * 100
+        print(f"\r{dirname} samples processed: [{int(progress)}%]", end='', flush=True)
+
         sample_path = row[1]
         filename = row[10]
+
         # For blackbox prepend key and bpm to filename if not null
-        key = row[4]
+        key = row[4] # TODO compare to key in filename, often file name has the scale (maj, min)
         bpm = row[5]
         sample_type = row[13] # loop OR oneshot
         key = key.upper() if key != None else None
@@ -80,7 +85,7 @@ def generate_links (dirname, samples):
         dir = '{}/{}'.format(dirname, sample_type)
 
         # Add key to the directory after sample_type
-        if dirname == 'tonal' and key is not None:
+        if key is not None:
             dir = '{}/{}'.format(dir, key)
 
         link_dir = '{}/{}'.format(sorted_dir, dir)
@@ -91,21 +96,31 @@ def generate_links (dirname, samples):
             os.makedirs(link_dir, exist_ok=True)
             shutil.copy(sample_path, link_path)
 
+# TODO add command line args?
 # main program
-reset_filetree()
+def main():
+    reset_filetree()
 
-sorted_samps = {}
-catchall = ''
+    sorted_samps = {}
 
-# process samples
-for i in hierarchy['sample_dirs'].keys():
-    sorted_samps[i] = get_samples (hierarchy['sample_dirs'][i])
-    generate_links (i, sorted_samps[i])
-    
-# catchall (percussion)
-catchall_samps = get_samples (hierarchy['catchall'])
-for i in sorted_samps.keys():
-    for samp in sorted_samps[i]:
-        if samp in catchall_samps:
-            catchall_samps.remove(samp)
-generate_links (hierarchy['catchall']['dirname'], catchall_samps)
+    # process samples
+    for i in hierarchy['sample_dirs'].keys():
+        sorted_samps[i] = get_samples (hierarchy['sample_dirs'][i])
+        generate_links (i, sorted_samps[i])
+        print("") # New line for progress meter
+
+
+def tag_counts():
+    tag_count = defaultdict(lambda: 0)
+    rows = sounds_db.execute('select tags from samples').fetchall()
+    for row in rows:
+        tags = row[0].split(',')
+        for tag in tags:
+            tag_count[tag] += 1
+    # Sort the dictionary items by values in descending order
+    sorted_tag_count = dict(sorted(tag_count.items(), key=lambda item: item[1], reverse=True))
+    # Print the sorted dictionary
+    for tag, count in sorted_tag_count.items():
+        print(f"{tag}: {count}")
+
+main()
