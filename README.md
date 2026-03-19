@@ -17,9 +17,20 @@ Splice stores samples in pack-based folders that are painful to navigate on a sm
 ```
 SD card/
   kicks/
-    kick-sample.wav
+    oneshot/
+      kick-sample.wav
+    loop/
+      140-kick-loop.wav
   snares/
-    snr-001.wav
+    oneshot/
+      snr-001.wav
+    loop/
+      130-snare-roll.wav
+  hats/
+    oneshot/
+      hat-closed.wav
+    loop/
+      120-hat-loop.wav
   grooves/
     loop/
       120-drum-break.wav
@@ -58,11 +69,11 @@ SD card/
    cp SpliceLogs/users/default/YOUR_USERNAME/sounds.db .
    ```
 
-**Optional config file** at `~/.splorganizer/splorganizer.toml`:
+**Optional config file** at `~/.splicecrate/splicecrate.toml`:
 
 ```toml
 splice_dir = "C:/Users/you/Documents/Splice/Samples"
-stage_dir = "C:/Users/you/Documents/Splice/Splorganized"
+stage_dir = "C:/Users/you/Documents/Splice/Splicecrate"
 dest_dir = "E:/"
 sounds_db = "C:/path/to/sounds.db"
 ```
@@ -73,19 +84,19 @@ All paths can also be passed as CLI flags.
 
 ```bash
 # See what you've got
-python -m splorganize --db sounds.db status
+python -m splicecrate --db sounds.db status
 
 # Preview what would be organized
-python -m splorganize --db sounds.db organize --dry-run
+python -m splicecrate --db sounds.db organize --dry-run
 
 # Organize samples to local staging directory
-python -m splorganize --db sounds.db organize
+python -m splicecrate --db sounds.db organize
 
 # Preview what would sync to SD card
-python -m splorganize --dest-dir E:/ sync --dry-run
+python -m splicecrate --dest-dir E:/ sync --dry-run
 
 # Sync staged files to SD card
-python -m splorganize --dest-dir E:/ sync
+python -m splicecrate --dest-dir E:/ sync
 ```
 
 ### Commands
@@ -110,8 +121,10 @@ python -m splorganize --dest-dir E:/ sync
 
 Categories are defined in `hierarchy.json` and matched against sample tags and filenames in sounds.db.
 
-**Percussive** (flat directories, no key sorting):
+**Percussive** (no key sorting):
 kicks, snares, hats, claps, cymbals, percussion, grooves, fx
+
+Kicks, snares, hats, and grooves split into `oneshot/` and `loop/` subdirectories. Loops are prefixed with BPM (e.g., `140-kick-loop.wav`). Other percussive categories contain oneshots only.
 
 **Melodic** (sorted by sample type and musical key):
 808, bass, synth, leads, stabs, piano, keys, guitar, orchestral, sax, pads, vocals
