@@ -1,126 +1,52 @@
-import os
-import re
-import shutil
 import json
-from pathlib import Path
-import sqlite3
-import pandas as pd
-from collections import defaultdict
+import logging
+import sys
 
-splice_dir = 'C:/Users/carol/Documents/Splice/Samples/'
-sorted_dir  = 'C:/Users/carol/Documents/Splice/Splorganized/'
+from .config import build_parser, build_config
+from .organizer import organize, status
+from .sync import sync_to_destination
 
-pd.set_option('display.max_rows', None)
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', None)
-pd.set_option('display.max_colwidth', None)
 
-# open databases
-sounds_db = sqlite3.connect('sounds.db')
-with open ('hierarchy.json', 'r') as f:
-    hierarchy = json.loads(f.read())
-with open ('db_info.json', 'r') as f:
-    db_info = json.loads(f.read())
-
-# sqlite regex function
-def regexp(expr, item):
-    try:
-        reg = re.compile(expr)
-        return reg.search(item) is not None
-    except Exception as e:
-        print(e)
-sounds_db.create_function("REGEXP", 2, regexp)
-
-def reset_filetree():
-    for dirname in os.scandir (sorted_dir):
-        shutil.rmtree (dirname.path)
-    for dirname in hierarchy['sample_dirs'].keys():
-        os.mkdir (sorted_dir + '/' + dirname)
-
-def get_samples (cat, custom_query=None):
-    if 'query' in cat:
-        query = cat['query']
-    else:
-        query = """
-        select * from samples 
-        where tags regexp '{tag_regex}'
-        and filename regexp '{file_regex}'
-        {loop_filter}
-        and local_path not null;""".format (
-            tag_regex = cat['tag_regex'],
-            file_regex = cat['file_regex'],
-            loop_filter = "and sample_type = 'oneshot'" if not cat['include_loops'] else ""
-        ) if not custom_query else custom_query
-    
-    with sounds_db:
-        return sounds_db.execute(query).fetchall()
-
-def samples_to_dataframe (samples):
-    return pd.DataFrame(samples,
-             columns=db_info['db_cols'])\
-            .set_index ('id')\
-            .drop(['local_path', 'attr_hash', 'file_hash', 'sas_id', 'genre', 'pack_uuid', 'purchased_at', 'last_modified_at', 'waveform_url'], axis=1)
-
-# create link directory
-def generate_links (dirname, samples):
-    num_samples = len(samples)
-    for i, row in enumerate(samples):
-        progress = (i + 1) / num_samples * 100
-        print(f"\r{dirname} samples processed: [{int(progress)}%]", end='', flush=True)
-
-        sample_path = row[1]
-        filename = row[10]
-
-        # For blackbox prepend key and bpm to filename if not null
-        key = row[4] # TODO compare to key in filename, often file name has the scale (maj, min)
-        bpm = row[5]
-        sample_type = row[13] # loop OR oneshot
-        key = key.upper() if key != None else None
-        bpm = None if bpm == 0 else str(bpm)
-        original_list = [key, bpm, filename]
-        filtered_list = [item for item in original_list if item is not None]
-        filename = "-".join(filtered_list)
-
-        # Add oneshot or loop to the directory
-        dir = '{}/{}'.format(dirname, sample_type)
-
-        # Add key to the directory after sample_type
-        if key is not None:
-            dir = '{}/{}'.format(dir, key)
-
-        link_dir = '{}/{}'.format(sorted_dir, dir)
-        link_path = '{}/{}'.format(link_dir, filename)
-        if not os.path.exists(link_path):
-            # TODO symlink is funky on windows with perms
-            # os.symlink(sample_path, link_path)
-            os.makedirs(link_dir, exist_ok=True)
-            shutil.copy(sample_path, link_path)
-
-# TODO add command line args?
-# main program
 def main():
-    reset_filetree()
+    parser = build_parser()
+    args = parser.parse_args()
 
-    sorted_samps = {}
+    # Setup logging
+    level = logging.DEBUG if getattr(args, "verbose", False) else logging.INFO
+    logging.basicConfig(
+        level=level,
+        format="%(message)s",
+        stream=sys.stdout,
+    )
 
-    # process samples
-    for i in hierarchy['sample_dirs'].keys():
-        sorted_samps[i] = get_samples (hierarchy['sample_dirs'][i])
-        generate_links (i, sorted_samps[i])
-        print("") # New line for progress meter
+    if not args.command:
+        parser.print_help()
+        return
+
+    config = build_config(args)
+
+    # Load hierarchy
+    with open(config["hierarchy"], "r") as f:
+        hierarchy = json.load(f)
+
+    if args.command == "organize":
+        if not config["sounds_db"].exists():
+            logging.error("sounds.db not found at %s", config["sounds_db"])
+            sys.exit(1)
+        organize(config, hierarchy, dry_run=args.dry_run)
+
+    elif args.command == "sync":
+        if config["dest_dir"] is None:
+            logging.error("No destination directory specified. Use --dest-dir or set dest_dir in config.")
+            sys.exit(1)
+        sync_to_destination(config["stage_dir"], config["dest_dir"], dry_run=args.dry_run)
+
+    elif args.command == "status":
+        if not config["sounds_db"].exists():
+            logging.error("sounds.db not found at %s", config["sounds_db"])
+            sys.exit(1)
+        status(config, hierarchy)
 
 
-def tag_counts():
-    tag_count = defaultdict(lambda: 0)
-    rows = sounds_db.execute('select tags from samples').fetchall()
-    for row in rows:
-        tags = row[0].split(',')
-        for tag in tags:
-            tag_count[tag] += 1
-    # Sort the dictionary items by values in descending order
-    sorted_tag_count = dict(sorted(tag_count.items(), key=lambda item: item[1], reverse=True))
-    # Print the sorted dictionary
-    for tag, count in sorted_tag_count.items():
-        print(f"{tag}: {count}")
-
-main()
+if __name__ == "__main__":
+    main()
