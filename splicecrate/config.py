@@ -5,17 +5,17 @@ from pathlib import Path
 
 DEFAULTS = {
     "splice_dir": Path.home() / "Documents" / "Splice" / "Samples",
-    "stage_dir": Path.home() / "Documents" / "Splice" / "Splorganized",
+    "stage_dir": Path.home() / "Documents" / "Splice" / "Splicecrate",
     "dest_dir": None,
     "sounds_db": Path(__file__).resolve().parent.parent / "sounds.db",
     "hierarchy": Path(__file__).resolve().parent.parent / "hierarchy.json",
 }
 
-CONFIG_PATH = Path.home() / ".splorganizer" / "splorganizer.toml"
+CONFIG_PATH = Path.home() / ".splicecrate" / "splicecrate.toml"
 
 
 def load_config_file():
-    """Load config from ~/.splorganizer/splorganizer.toml if it exists."""
+    """Load config from ~/.splicecrate/splicecrate.toml if it exists."""
     if not CONFIG_PATH.exists():
         return {}
     with open(CONFIG_PATH, "rb") as f:
@@ -50,7 +50,7 @@ def build_config(cli_args=None):
 
 def build_parser():
     parser = argparse.ArgumentParser(
-        prog="splorganize",
+        prog="splicecrate",
         description="Organize Splice samples for 1010music Blackbox",
     )
     parser.add_argument("--db", dest="sounds_db", help="Path to sounds.db")
