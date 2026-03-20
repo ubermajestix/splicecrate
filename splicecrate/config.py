@@ -8,7 +8,6 @@ DEFAULTS = {
     "stage_dir": Path.home() / "Documents" / "Splice" / "Splicecrate",
     "dest_dir": None,
     "sounds_db": Path(__file__).resolve().parent.parent / "sounds.db",
-    "hierarchy": Path(__file__).resolve().parent.parent / "hierarchy.json",
 }
 
 CONFIG_PATH = Path.home() / ".splicecrate" / "splicecrate.toml"
@@ -40,7 +39,7 @@ def build_config(cli_args=None):
                 config[key] = Path(val)
 
     # Ensure Path types
-    for key in ["splice_dir", "stage_dir", "sounds_db", "hierarchy"]:
+    for key in ["splice_dir", "stage_dir", "sounds_db"]:
         config[key] = Path(config[key])
     if config["dest_dir"] is not None:
         config["dest_dir"] = Path(config["dest_dir"])
@@ -67,5 +66,6 @@ def build_parser():
     syn.add_argument("--dry-run", action="store_true", help="Show what would be copied without copying")
 
     sub.add_parser("status", help="Show category counts and new files since last run")
+    sub.add_parser("discover", help="Scan sounds.db and show discovered categories")
 
     return parser

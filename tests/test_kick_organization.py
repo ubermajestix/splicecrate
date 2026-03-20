@@ -1,12 +1,14 @@
-"""Test that kick samples (oneshots and loops) are organized correctly."""
+"""Test that kick/drum samples (oneshots and loops) are organized correctly.
 
-import os
+Kicks are a subcategory tag under the 'drums' parent category.
+Drums are percussive: oneshots go flat, loops get BPM prefix (zero-padded to 3 digits).
+"""
+
 import sqlite3
 import tempfile
 from pathlib import Path
 
-from splicecrate import organizer, database
-import json
+from splicecrate import organizer
 
 
 def make_test_db(tmp_path, samples):
@@ -53,178 +55,112 @@ def create_source_files(tmp_path, samples):
     for s in samples:
         p = Path(s["local_path"])
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_bytes(b"RIFF" + b"\x00" * 40)  # minimal fake wav
+        p.write_bytes(b"RIFF" + b"\x00" * 40)
 
 
-def load_hierarchy():
-    hier_path = Path(__file__).resolve().parent.parent / "hierarchy.json"
-    with open(hier_path) as f:
-        return json.load(f)
-
-
-def test_kick_oneshots_in_oneshot_subdir():
-    """Kick oneshots should land in kicks/oneshot/."""
+def test_kick_oneshots_flat_in_drums():
+    """Kick oneshots should land flat in drums/ (percussive, no subdirs)."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         source_dir = tmp_path / "source"
         source_dir.mkdir()
 
         samples = [
-            {
-                "id": 1,
-                "local_path": str(source_dir / "kick-hard.wav"),
-                "filename": "kick-hard.wav",
-                "tags": "kicks",
-                "sample_type": "oneshot",
-                "bpm": 0,
-            },
-            {
-                "id": 2,
-                "local_path": str(source_dir / "bd-808.wav"),
-                "filename": "bd-808.wav",
-                "tags": "kicks",
-                "sample_type": "oneshot",
-                "bpm": 0,
-            },
+            {"id": 1, "local_path": str(source_dir / "kick-hard.wav"),
+             "filename": "kick-hard.wav", "tags": "kicks",
+             "sample_type": "oneshot", "bpm": 0},
+            {"id": 2, "local_path": str(source_dir / "bd-808.wav"),
+             "filename": "bd-808.wav", "tags": "kicks",
+             "sample_type": "oneshot", "bpm": 0},
         ]
         create_source_files(tmp_path, samples)
         db_path = make_test_db(tmp_path, samples)
         stage_dir = tmp_path / "staged"
 
-        config = {"sounds_db": str(db_path), "stage_dir": str(stage_dir)}
-        hierarchy = load_hierarchy()
+        organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-        organizer.organize(config, hierarchy)
-
-        # Both should be in kicks/oneshot/
-        kicks_oneshot = stage_dir / "kicks" / "oneshot"
-        assert kicks_oneshot.exists(), f"Expected {kicks_oneshot} to exist"
-        files = list(kicks_oneshot.iterdir())
-        filenames = [f.name for f in files]
-        assert "kick-hard.wav" in filenames
-        assert "bd-808.wav" in filenames
+        # Percussive oneshots go flat in drums/
+        assert (stage_dir / "drums" / "kick-hard.wav").exists()
+        assert (stage_dir / "drums" / "bd-808.wav").exists()
 
 
-def test_kick_loops_in_loop_subdir_with_bpm():
-    """Kick loops should land in kicks/loop/ with BPM prefix."""
+def test_kick_loops_with_bpm_prefix():
+    """Kick loops should land in drums/ with zero-padded BPM prefix."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         source_dir = tmp_path / "source"
         source_dir.mkdir()
 
         samples = [
-            {
-                "id": 10,
-                "local_path": str(source_dir / "kick-pattern.wav"),
-                "filename": "kick-pattern.wav",
-                "tags": "kicks",
-                "sample_type": "loop",
-                "bpm": 128,
-            },
-            {
-                "id": 11,
-                "local_path": str(source_dir / "bd-groove.wav"),
-                "filename": "bd-groove.wav",
-                "tags": "kicks",
-                "sample_type": "loop",
-                "bpm": 140,
-            },
+            {"id": 10, "local_path": str(source_dir / "kick-pattern.wav"),
+             "filename": "kick-pattern.wav", "tags": "kicks",
+             "sample_type": "loop", "bpm": 128},
+            {"id": 11, "local_path": str(source_dir / "bd-groove.wav"),
+             "filename": "bd-groove.wav", "tags": "kicks",
+             "sample_type": "loop", "bpm": 92},
         ]
         create_source_files(tmp_path, samples)
         db_path = make_test_db(tmp_path, samples)
         stage_dir = tmp_path / "staged"
 
-        config = {"sounds_db": str(db_path), "stage_dir": str(stage_dir)}
-        hierarchy = load_hierarchy()
+        organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-        organizer.organize(config, hierarchy)
-
-        kicks_loop = stage_dir / "kicks" / "loop"
-        assert kicks_loop.exists(), f"Expected {kicks_loop} to exist"
-        files = list(kicks_loop.iterdir())
-        filenames = [f.name for f in files]
-        assert "128-kick-pattern.wav" in filenames, f"Expected BPM-prefixed kick loop, got {filenames}"
-        assert "140-bd-groove.wav" in filenames, f"Expected BPM-prefixed kick loop, got {filenames}"
+        # Percussive loops get BPM prefix, zero-padded to 3 digits
+        assert (stage_dir / "drums" / "128-kick-pattern.wav").exists()
+        assert (stage_dir / "drums" / "092-bd-groove.wav").exists()
 
 
 def test_kick_loop_no_bpm():
-    """Kick loop with no BPM should still land in kicks/loop/ without prefix."""
+    """Kick loop with no BPM should land in drums/ without prefix."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         source_dir = tmp_path / "source"
         source_dir.mkdir()
 
         samples = [
-            {
-                "id": 20,
-                "local_path": str(source_dir / "kick-loop-raw.wav"),
-                "filename": "kick-loop-raw.wav",
-                "tags": "kicks",
-                "sample_type": "loop",
-                "bpm": 0,
-            },
+            {"id": 20, "local_path": str(source_dir / "kick-loop-raw.wav"),
+             "filename": "kick-loop-raw.wav", "tags": "kicks",
+             "sample_type": "loop", "bpm": 0},
         ]
         create_source_files(tmp_path, samples)
         db_path = make_test_db(tmp_path, samples)
         stage_dir = tmp_path / "staged"
 
-        config = {"sounds_db": str(db_path), "stage_dir": str(stage_dir)}
-        hierarchy = load_hierarchy()
+        organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-        organizer.organize(config, hierarchy)
-
-        kicks_loop = stage_dir / "kicks" / "loop"
-        assert kicks_loop.exists()
-        filenames = [f.name for f in kicks_loop.iterdir()]
-        assert "kick-loop-raw.wav" in filenames, f"Expected no BPM prefix, got {filenames}"
+        assert (stage_dir / "drums" / "kick-loop-raw.wav").exists()
 
 
 def test_kick_mixed_oneshots_and_loops():
-    """Mix of oneshots and loops should split correctly."""
+    """Mix of oneshots and loops should all land flat in drums/."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         source_dir = tmp_path / "source"
         source_dir.mkdir()
 
         samples = [
-            {
-                "id": 30,
-                "local_path": str(source_dir / "kick-one.wav"),
-                "filename": "kick-one.wav",
-                "tags": "kicks",
-                "sample_type": "oneshot",
-                "bpm": 0,
-            },
-            {
-                "id": 31,
-                "local_path": str(source_dir / "kick-loop.wav"),
-                "filename": "kick-loop.wav",
-                "tags": "kicks",
-                "sample_type": "loop",
-                "bpm": 175,
-            },
+            {"id": 30, "local_path": str(source_dir / "kick-one.wav"),
+             "filename": "kick-one.wav", "tags": "kicks",
+             "sample_type": "oneshot", "bpm": 0},
+            {"id": 31, "local_path": str(source_dir / "kick-loop.wav"),
+             "filename": "kick-loop.wav", "tags": "kicks",
+             "sample_type": "loop", "bpm": 175},
         ]
         create_source_files(tmp_path, samples)
         db_path = make_test_db(tmp_path, samples)
         stage_dir = tmp_path / "staged"
 
-        config = {"sounds_db": str(db_path), "stage_dir": str(stage_dir)}
-        hierarchy = load_hierarchy()
+        organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-        organizer.organize(config, hierarchy)
-
-        # Oneshot in oneshot/
-        oneshot_files = [f.name for f in (stage_dir / "kicks" / "oneshot").iterdir()]
-        assert "kick-one.wav" in oneshot_files
-
-        # Loop in loop/ with BPM
-        loop_files = [f.name for f in (stage_dir / "kicks" / "loop").iterdir()]
-        assert "175-kick-loop.wav" in loop_files
+        # Oneshot: flat, no BPM
+        assert (stage_dir / "drums" / "kick-one.wav").exists()
+        # Loop: flat with BPM prefix
+        assert (stage_dir / "drums" / "175-kick-loop.wav").exists()
 
 
 if __name__ == "__main__":
-    test_kick_oneshots_in_oneshot_subdir()
-    test_kick_loops_in_loop_subdir_with_bpm()
+    test_kick_oneshots_flat_in_drums()
+    test_kick_loops_with_bpm_prefix()
     test_kick_loop_no_bpm()
     test_kick_mixed_oneshots_and_loops()
     print("All kick organization tests passed!")
