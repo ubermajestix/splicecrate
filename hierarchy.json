@@ -24,14 +24,16 @@
     "claps": {
       "tag_regex": "claps",
       "file_regex": "",
-      "include_loops": false,
-      "percussive": true
+      "include_loops": true,
+      "percussive": true,
+      "split_by_type": true
     },
     "cymbals": {
       "tag_regex": "cymbals|rides|crash",
-      "file_regex": "",
-      "include_loops": false,
-      "percussive": true
+      "file_regex": "(cymbal|ride|crash)",
+      "include_loops": true,
+      "percussive": true,
+      "split_by_type": true
     },
     "percussion": {
       "tag_regex": "percussion|toms|shakers|tambourine|rims|congas|bongos|cowbells",
@@ -123,6 +125,25 @@
       "file_regex": "",
       "include_loops": true,
       "percussive": false
+    },
+    "melodic_loops": {
+      "tag_regex": "melodic stack|melodic|soul|rnb|music",
+      "file_regex": "(melodic|music_loop)",
+      "include_loops": true,
+      "percussive": false
+    },
+    "songstarters": {
+      "tag_regex": "songstarters",
+      "file_regex": "(songstart|song_start)",
+      "include_loops": true,
+      "percussive": false
+    },
+    "drum_tops": {
+      "tag_regex": "tops",
+      "file_regex": "(drum_top|top_loop|_top_)",
+      "include_loops": true,
+      "percussive": true,
+      "split_by_type": true
     }
   },
   "catchall": {
