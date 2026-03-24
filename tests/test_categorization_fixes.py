@@ -158,7 +158,7 @@ class TestTagCategoryMapping:
             assert "snare_01.wav" in staged_files(stage_dir, "drums")
 
     def test_synth_tag_is_melodic(self):
-        """Samples tagged 'synth' should get key subdirectories."""
+        """Samples tagged 'synth' should get key prefix in filename."""
         with tempfile.TemporaryDirectory() as tmp:
             tmp_path = Path(tmp)
             source_dir = tmp_path / "source"
@@ -173,9 +173,9 @@ class TestTagCategoryMapping:
 
             organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-            assert "120-pad_warm.wav" in staged_files(stage_dir, "synth")
-            # Should be under synth/loop/CM/
-            expected = stage_dir / "synth" / "loop" / "CM" / "120-pad_warm.wav"
+            assert "CM-120-pad_warm.wav" in staged_files(stage_dir, "synth")
+            # Should be under synth/loop/ with key prefix (no key subdir)
+            expected = stage_dir / "synth" / "loop" / "CM-120-pad_warm.wav"
             assert expected.exists(), f"Expected melodic path {expected}"
 
     def test_multi_tag_uses_first_match(self):
@@ -220,7 +220,7 @@ class TestOtherFallback:
 
             organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-            assert "misc_element.wav" in staged_files(stage_dir, "other")
+            assert "zz-misc_element.wav" in staged_files(stage_dir, "other")
 
     def test_unmapped_tag_becomes_other_subdir(self):
         """Tags like 'melodic stack' should become other/melodic_stack/."""
@@ -239,7 +239,7 @@ class TestOtherFallback:
             organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
             # "soul" is a genre tag (skipped), "melodic stack" becomes subdir
-            assert "085-stack_loop.wav" in staged_files(stage_dir, "other/melodic_stack")
+            assert "C-085-stack_loop.wav" in staged_files(stage_dir, "other/melodic_stack")
 
     def test_genre_only_tags_goes_to_plain_other(self):
         """Samples with only genre tags should go to other/ (not other/genre/)."""
@@ -257,7 +257,7 @@ class TestOtherFallback:
 
             organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-            assert "vibe_01.wav" in staged_files(stage_dir, "other")
+            assert "zz-vibe_01.wav" in staged_files(stage_dir, "other")
 
 
 if __name__ == "__main__":

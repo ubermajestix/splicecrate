@@ -16,8 +16,9 @@ def build_staged_path(category, is_percussive, sample):
     Rules:
     - Percussive oneshots:  category/filename.wav
     - Percussive loops:     category/BPM-filename.wav  (BPM zero-padded to 3 digits)
-    - Melodic oneshots:     category/oneshot/KEY/filename.wav
-    - Melodic loops:        category/loop/KEY/BPM-filename.wav  (BPM zero-padded to 3 digits)
+    - Melodic oneshots:     category/oneshot/KEY-filename.wav
+    - Melodic loops:        category/loop/KEY-BPM-filename.wav  (BPM zero-padded to 3 digits)
+    - Keyless melodic:      'zz' prefix sorts after all musical keys (A-G)
     """
     parts = [category]
     sample_type = sample["sample_type"] or "oneshot"
@@ -27,11 +28,15 @@ def build_staged_path(category, is_percussive, sample):
 
     if not is_percussive:
         parts.append(sample_type)
-        if key:
-            parts.append(key.upper())
 
     # Build filename
     filename_parts = []
+    if not is_percussive:
+        if key:
+            filename_parts.append(key.upper())
+        else:
+            # "zz" sorts after all musical keys (A-G), pushing keyless samples to the end
+            filename_parts.append("zz")
     if is_loop and bpm and bpm != 0:
         filename_parts.append(f"{int(bpm):03d}")
     filename_parts.append(sample["filename"])
