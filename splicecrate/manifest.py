@@ -6,7 +6,7 @@ from pathlib import Path
 
 log = logging.getLogger(__name__)
 
-MANIFEST_FILENAME = ".splorganizer_manifest.json"
+MANIFEST_FILENAME = ".splicecrate_manifest.json"
 
 
 def manifest_path(stage_dir):

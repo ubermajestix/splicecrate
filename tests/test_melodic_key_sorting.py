@@ -3,12 +3,11 @@
 Keyless melodic samples get a 'zz' prefix so they sort after all musical keys (A-G).
 """
 
-import json
 import sqlite3
 import tempfile
 from pathlib import Path
 
-from splorganize import database, organizer
+from splicecrate import organizer
 
 
 def make_test_db(tmp_path, samples):
@@ -59,20 +58,6 @@ def create_source_files(tmp_path, samples):
         p.write_bytes(b"RIFF" + b"\x00" * 40)
 
 
-def load_hierarchy():
-    hier_path = Path(__file__).resolve().parent.parent / "hierarchy.json"
-    with open(hier_path) as f:
-        return json.load(f)
-
-
-def staged_files(stage_dir, category):
-    """Recursively collect filenames staged under a given category folder."""
-    cat_dir = stage_dir / category
-    if not cat_dir.exists():
-        return []
-    return [p.name for p in cat_dir.rglob("*") if p.is_file()]
-
-
 class TestMelodicKeySorting:
 
     def test_melodic_with_key_gets_key_prefix_no_subdir(self):
@@ -89,7 +74,7 @@ class TestMelodicKeySorting:
             db_path = make_test_db(tmp_path, samples)
             stage_dir = tmp_path / "staged"
 
-            organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)}, load_hierarchy())
+            organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
             # Should be in bass/loop/ (no key subdir), with key prefix in filename
             bass_loop = stage_dir / "bass" / "loop"
@@ -113,7 +98,7 @@ class TestMelodicKeySorting:
             db_path = make_test_db(tmp_path, samples)
             stage_dir = tmp_path / "staged"
 
-            organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)}, load_hierarchy())
+            organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
             bass_oneshot = stage_dir / "bass" / "oneshot"
             assert bass_oneshot.exists()
@@ -143,7 +128,7 @@ class TestMelodicKeySorting:
             db_path = make_test_db(tmp_path, samples)
             stage_dir = tmp_path / "staged"
 
-            organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)}, load_hierarchy())
+            organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
             bass_oneshot = stage_dir / "bass" / "oneshot"
             filenames = sorted(f.name for f in bass_oneshot.iterdir())

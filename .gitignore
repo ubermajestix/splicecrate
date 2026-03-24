@@ -4,5 +4,5 @@ sounds.db-journal
 .ipynb_checkpoints
 __pycache__/
 SpliceLogs-*/*
-splorganizer.toml
-.splorganizer_manifest.json
+splicecrate.toml
+.splicecrate_manifest.json

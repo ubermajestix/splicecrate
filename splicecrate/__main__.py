@@ -1,4 +1,3 @@
-import json
 import logging
 import sys
 
@@ -25,15 +24,11 @@ def main():
 
     config = build_config(args)
 
-    # Load hierarchy
-    with open(config["hierarchy"], "r") as f:
-        hierarchy = json.load(f)
-
     if args.command == "organize":
         if not config["sounds_db"].exists():
             logging.error("sounds.db not found at %s", config["sounds_db"])
             sys.exit(1)
-        organize(config, hierarchy, dry_run=args.dry_run)
+        organize(config, dry_run=args.dry_run)
 
     elif args.command == "sync":
         if config["dest_dir"] is None:
@@ -45,7 +40,23 @@ def main():
         if not config["sounds_db"].exists():
             logging.error("sounds.db not found at %s", config["sounds_db"])
             sys.exit(1)
-        status(config, hierarchy)
+        status(config)
+
+    elif args.command == "discover":
+        if not config["sounds_db"].exists():
+            logging.error("sounds.db not found at %s", config["sounds_db"])
+            sys.exit(1)
+        from . import database
+        from .categories import discover_categories
+        conn = database.connect(config["sounds_db"])
+        counts = discover_categories(conn)
+        conn.close()
+        print(f"{'Category':<24} {'Samples':>8}")
+        print("-" * 34)
+        for cat, count in counts.items():
+            print(f"{cat:<24} {count:>8}")
+        print("-" * 34)
+        print(f"{'Total':<24} {sum(counts.values()):>8}")
 
 
 if __name__ == "__main__":
