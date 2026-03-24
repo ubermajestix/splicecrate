@@ -11,9 +11,10 @@ log = logging.getLogger(__name__)
 def build_staged_path(category_name, category_config, sample):
     """Build the relative path for a sample within the staging directory.
 
-    Percussive categories skip key subdirectories and key filename prefix.
+    Percussive categories skip key filename prefix.
     Grooves (split_by_type) get oneshot/loop subdirs even though percussive.
-    Melodic categories get sample_type/key subdirs.
+    Melodic categories get sample_type subdirs with key as filename prefix.
+    Keyless melodic samples use 'zz' prefix to sort after all keys (A-G).
     """
     parts = [category_name]
     is_percussive = category_config.get("percussive", False)
@@ -28,13 +29,15 @@ def build_staged_path(category_name, category_config, sample):
         # No key subdir for percussive
     else:
         parts.append(sample_type)
-        if key:
-            parts.append(key.upper())
 
     # Build filename
     filename_parts = []
-    if not is_percussive and key:
-        filename_parts.append(key.upper())
+    if not is_percussive:
+        if key:
+            filename_parts.append(key.upper())
+        else:
+            # "zz" sorts after all musical keys (A-G), pushing keyless samples to the end
+            filename_parts.append("zz")
     if bpm and bpm != 0:
         filename_parts.append(str(int(bpm)))
     filename_parts.append(sample["filename"])
