@@ -6,6 +6,7 @@ from pathlib import Path
 
 from . import database, manifest
 from .categories import categorize_sample
+from .keys import resolve_key_prefix
 
 log = logging.getLogger(__name__)
 
@@ -32,8 +33,9 @@ def build_staged_path(category, is_percussive, sample):
     # Build filename
     filename_parts = []
     if not is_percussive:
-        if key:
-            filename_parts.append(key.upper())
+        key_prefix = resolve_key_prefix(key, sample["filename"])
+        if key_prefix:
+            filename_parts.append(key_prefix)
         else:
             # "zz" sorts after all musical keys (A-G), pushing keyless samples to the end
             filename_parts.append("zz")

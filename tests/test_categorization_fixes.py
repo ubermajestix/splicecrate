@@ -173,9 +173,9 @@ class TestTagCategoryMapping:
 
             organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-            assert "CM-120-pad_warm.wav" in staged_files(stage_dir, "synth")
+            assert "Cm-120-pad_warm.wav" in staged_files(stage_dir, "synth")
             # Should be under synth/loop/ with key prefix (no key subdir)
-            expected = stage_dir / "synth" / "loop" / "CM-120-pad_warm.wav"
+            expected = stage_dir / "synth" / "loop" / "Cm-120-pad_warm.wav"
             assert expected.exists(), f"Expected melodic path {expected}"
 
     def test_multi_tag_uses_first_match(self):
@@ -239,7 +239,7 @@ class TestOtherFallback:
             organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
             # "soul" is a genre tag (skipped), "melodic stack" becomes subdir
-            assert "C-085-stack_loop.wav" in staged_files(stage_dir, "other/melodic_stack")
+            assert "CM-085-stack_loop.wav" in staged_files(stage_dir, "other/melodic_stack")
 
     def test_genre_only_tags_goes_to_plain_other(self):
         """Samples with only genre tags should go to other/ (not other/genre/)."""
