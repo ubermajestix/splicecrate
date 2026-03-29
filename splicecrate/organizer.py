@@ -15,8 +15,8 @@ def build_staged_path(category, is_percussive, sample):
     """Build the relative path for a sample within the staging directory.
 
     Rules:
-    - Percussive oneshots:  category/filename.wav
-    - Percussive loops:     category/BPM-filename.wav  (BPM zero-padded to 3 digits)
+    - Percussive oneshots:  category/oneshot/filename.wav
+    - Percussive loops:     category/loop/BPM-filename.wav  (BPM zero-padded to 3 digits)
     - Melodic oneshots:     category/oneshot/KEY-filename.wav
     - Melodic loops:        category/loop/KEY-BPM-filename.wav  (BPM zero-padded to 3 digits)
     - Keyless melodic:      'zz' prefix sorts after all musical keys (A-G)
@@ -27,8 +27,7 @@ def build_staged_path(category, is_percussive, sample):
     bpm = sample["bpm"]
     is_loop = sample_type == "loop"
 
-    if not is_percussive:
-        parts.append(sample_type)
+    parts.append(sample_type)
 
     # Build filename
     filename_parts = []
