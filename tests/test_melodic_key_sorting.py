@@ -80,9 +80,9 @@ class TestMelodicKeySorting:
             bass_loop = stage_dir / "bass" / "loop"
             assert bass_loop.exists()
             filenames = [f.name for f in bass_loop.iterdir()]
-            assert "FM-120-warm-pad.wav" in filenames
+            assert "Fm-120-warm-pad.wav" in filenames
             # Should NOT have a key subdirectory
-            assert not (bass_loop / "FM").exists(), "Key subdirectory should not exist"
+            assert not (bass_loop / "Fm").exists(), "Key subdirectory should not exist"
 
     def test_melodic_without_key_gets_zz_prefix(self):
         """Melodic sample without a key should get 'zz' prefix to sort after keyed samples."""
@@ -133,7 +133,7 @@ class TestMelodicKeySorting:
             bass_oneshot = stage_dir / "bass" / "oneshot"
             filenames = sorted(f.name for f in bass_oneshot.iterdir())
             # CM and GM should sort before zz
-            assert filenames == ["CM-bass-one.wav", "GM-bass-two.wav", "zz-bass-nokey.wav"], \
+            assert filenames == ["Cm-bass-one.wav", "Gm-bass-two.wav", "zz-bass-nokey.wav"], \
                 f"Expected keyed before keyless, got {filenames}"
 
 
