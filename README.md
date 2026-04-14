@@ -16,21 +16,21 @@ Splice stores samples in pack-based folders that are painful to navigate on a sm
 
 ```
 SD card/
-  kicks/
-    oneshot/
-      kick-sample.wav
-    loop/
-      140-kick-loop.wav
-  snares/
-    oneshot/
-      snr-001.wav
-    loop/
-      130-snare-roll.wav
-  hats/
-    oneshot/
-      hat-closed.wav
-    loop/
-      120-hat-loop.wav
+  drums/
+    one-shots/
+      kicks/
+        kick-sample.wav
+      snares/
+        snr-001.wav
+      hats/
+        hat-closed.wav
+    loops/
+      kicks/
+        140-kick-loop.wav
+      snares/
+        130-snare-roll.wav
+      hats/
+        120-hat-loop.wav
   grooves/
     loop/
       120-drum-break.wav
@@ -121,13 +121,20 @@ python -m splicecrate --dest-dir E:/ sync
 
 Categories are defined in `hierarchy.json` and matched against sample tags and filenames in sounds.db.
 
-**Percussive** (no key sorting):
-kicks, snares, hats, claps, cymbals, percussion, grooves, fx
+**Drums** (organized by type first, then category):
+kicks, snares, hats, claps, cymbals, percussion
 
-Kicks, snares, hats, and grooves split into `oneshot/` and `loop/` subdirectories. Loops are prefixed with BPM (e.g., `140-kick-loop.wav`). Other percussive categories contain oneshots only.
+All drum samples are organized under a top-level `drums/` folder, split first by type (`one-shots/` or `loops/`), then by subcategory (kicks, snares, etc.). Loops are prefixed with BPM (e.g., `140-kick-loop.wav`).
+
+**Other percussive** (no key sorting):
+grooves, fx
+
+Split into `oneshot/` and `loop/` subdirectories. Loops are prefixed with BPM.
 
 **Melodic** (sorted by sample type and musical key):
 808, bass, synth, leads, stabs, piano, keys, guitar, orchestral, sax, pads, vocals
+
+Split into `oneshot/` and `loop/` subdirectories, with samples organized by musical key within each type.
 
 Samples matching multiple categories are copied to all of them. Anything unmatched goes to `other/`.
 
