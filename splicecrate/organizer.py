@@ -14,20 +14,31 @@ log = logging.getLogger(__name__)
 def build_staged_path(category, is_percussive, sample):
     """Build the relative path for a sample within the staging directory.
 
-    Rules:
+    Rules for drums:
+    - Drums oneshots: drums/one-shots/subcategory/filename.wav
+    - Drums loops:    drums/loops/subcategory/BPM-filename.wav  (BPM zero-padded to 3 digits)
+
+    Rules for other categories:
     - Percussive oneshots:  category/oneshot/filename.wav
     - Percussive loops:     category/loop/BPM-filename.wav  (BPM zero-padded to 3 digits)
     - Melodic oneshots:     category/oneshot/KEY-filename.wav
     - Melodic loops:        category/loop/KEY-BPM-filename.wav  (BPM zero-padded to 3 digits)
     - Keyless melodic:      'zz' prefix sorts after all musical keys (A-G)
     """
-    parts = [category]
     sample_type = sample["sample_type"] or "oneshot"
     key = sample["audio_key"]
     bpm = sample["bpm"]
     is_loop = sample_type == "loop"
 
-    parts.append(sample_type)
+    # Special handling for drums: drums/loops/kicks or drums/one-shots/kicks
+    if category.startswith("drums/"):
+        base_category = "drums"
+        subcategory = category.split("/", 1)[1]  # Extract the subcategory (kicks, snares, etc.)
+        type_folder = "loops" if is_loop else "one-shots"
+        parts = [base_category, type_folder, subcategory]
+    else:
+        parts = [category]
+        parts.append(sample_type)
 
     # Build filename
     filename_parts = []

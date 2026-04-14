@@ -1,7 +1,7 @@
 """Test that kick/drum samples (oneshots and loops) are organized correctly.
 
 Kicks are a subcategory tag under the 'drums' parent category and get their own
-subfolder: drums/kicks/oneshot/ for oneshots, drums/kicks/loop/ for loops with BPM prefix.
+subfolder: drums/one-shots/kicks/ for oneshots, drums/loops/kicks/ for loops with BPM prefix.
 """
 
 import sqlite3
@@ -59,7 +59,7 @@ def create_source_files(tmp_path, samples):
 
 
 def test_kick_oneshots_in_drums_oneshot():
-    """Kick oneshots should land in drums/kicks/oneshot/."""
+    """Kick oneshots should land in drums/one-shots/kicks/."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         source_dir = tmp_path / "source"
@@ -79,12 +79,12 @@ def test_kick_oneshots_in_drums_oneshot():
 
         organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-        assert (stage_dir / "drums" / "kicks" / "oneshot" / "kick-hard.wav").exists()
-        assert (stage_dir / "drums" / "kicks" / "oneshot" / "bd-808.wav").exists()
+        assert (stage_dir / "drums" / "one-shots" / "kicks" / "kick-hard.wav").exists()
+        assert (stage_dir / "drums" / "one-shots" / "kicks" / "bd-808.wav").exists()
 
 
 def test_kick_loops_with_bpm_prefix():
-    """Kick loops should land in drums/kicks/loop/ with zero-padded BPM prefix."""
+    """Kick loops should land in drums/loops/kicks/ with zero-padded BPM prefix."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         source_dir = tmp_path / "source"
@@ -104,12 +104,12 @@ def test_kick_loops_with_bpm_prefix():
 
         organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-        assert (stage_dir / "drums" / "kicks" / "loop" / "128-kick-pattern.wav").exists()
-        assert (stage_dir / "drums" / "kicks" / "loop" / "092-bd-groove.wav").exists()
+        assert (stage_dir / "drums" / "loops" / "kicks" / "128-kick-pattern.wav").exists()
+        assert (stage_dir / "drums" / "loops" / "kicks" / "092-bd-groove.wav").exists()
 
 
 def test_kick_loop_no_bpm():
-    """Kick loop with no BPM should land in drums/kicks/loop/ without prefix."""
+    """Kick loop with no BPM should land in drums/loops/kicks/ without prefix."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         source_dir = tmp_path / "source"
@@ -126,11 +126,11 @@ def test_kick_loop_no_bpm():
 
         organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-        assert (stage_dir / "drums" / "kicks" / "loop" / "kick-loop-raw.wav").exists()
+        assert (stage_dir / "drums" / "loops" / "kicks" / "kick-loop-raw.wav").exists()
 
 
 def test_kick_mixed_oneshots_and_loops():
-    """Oneshots and loops should go in separate subdirs under drums/kicks/."""
+    """Oneshots and loops should go in separate subdirs under drums/one-shots/kicks/ and drums/loops/kicks/."""
     with tempfile.TemporaryDirectory() as tmp:
         tmp_path = Path(tmp)
         source_dir = tmp_path / "source"
@@ -150,8 +150,8 @@ def test_kick_mixed_oneshots_and_loops():
 
         organizer.organize({"sounds_db": str(db_path), "stage_dir": str(stage_dir)})
 
-        assert (stage_dir / "drums" / "kicks" / "oneshot" / "kick-one.wav").exists()
-        assert (stage_dir / "drums" / "kicks" / "loop" / "175-kick-loop.wav").exists()
+        assert (stage_dir / "drums" / "one-shots" / "kicks" / "kick-one.wav").exists()
+        assert (stage_dir / "drums" / "loops" / "kicks" / "175-kick-loop.wav").exists()
 
 
 if __name__ == "__main__":
