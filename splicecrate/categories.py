@@ -6,6 +6,9 @@ from each user's sounds.db rather than hardcoded in a config file.
 
 Tags that don't map to any known parent end up in "other" with the
 tag name as a subdirectory.
+
+Drums are split into subcategories (drums/kicks, drums/snares, etc.)
+based on a secondary pass over the full tag list.
 """
 
 # Top-level categories and the Splice subcategory tags that belong to them.
@@ -72,6 +75,27 @@ CATEGORY_TAGS = {
 # Categories where samples are percussive (no musical key in path/filename).
 PERCUSSIVE_CATEGORIES = {"drums", "percussion"}
 
+# Drum-specific subcategory tags — scanned after the parent "drums" category is
+# confirmed. The first matching tag across the full tag list sets the subfolder.
+# Samples that don't match any subcategory land in drums/full.
+DRUM_SUBCATEGORY_TAGS = {
+    "kicks":   {"kicks"},
+    "snares":  {"snares", "rims", "sidestick"},
+    "hats":    {"hats", "closed", "open", "tops"},
+    "claps":   {"claps", "snaps"},
+    "toms":    {"toms"},
+    "cymbals": {"cymbals", "rides", "crash", "rolls"},
+    "808":     {"808"},
+    "breaks":  {"breaks"},
+    "fills":   {"fills"},
+}
+
+# Reverse lookup: drum tag -> subcategory name
+_DRUM_TAG_TO_SUBCAT = {}
+for _sub, _dtags in DRUM_SUBCATEGORY_TAGS.items():
+    for _dtag in _dtags:
+        _DRUM_TAG_TO_SUBCAT[_dtag] = _sub
+
 # Build a reverse lookup: tag -> parent category
 _TAG_TO_CATEGORY = {}
 for _cat, _tags in CATEGORY_TAGS.items():
@@ -106,6 +130,10 @@ def categorize_sample(tags_str):
     Priority: first matching tag wins (Splice puts the most specific
     tag first in the comma-separated list).
 
+    For drums, a second pass over all tags picks a subcategory (e.g.
+    "drums/kicks", "drums/snares", "drums/hats"). Samples that don't
+    match any drum subcategory tag land in "drums/full".
+
     Returns (category_name, is_percussive) or ("other/subtag", False) if no
     known tag matches. For "other", the first non-genre tag is used as a
     subdirectory name.
@@ -118,6 +146,13 @@ def categorize_sample(tags_str):
     for tag in tags:
         cat = tag_to_category(tag)
         if cat:
+            if cat == "drums":
+                # Refine to a drum subcategory by scanning all tags
+                for t in tags:
+                    subcat = _DRUM_TAG_TO_SUBCAT.get(t)
+                    if subcat:
+                        return f"drums/{subcat}", True
+                return "drums/full", True
             return cat, cat in PERCUSSIVE_CATEGORIES
 
     # No known category — pick the first non-genre tag as subdirectory
